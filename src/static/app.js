@@ -81,8 +81,6 @@ function connectWebSocket(jobId) {
         
         if (data.progress >= 100) {
             ws.close();
-            progressContainer.classList.add('hidden');
-            resultContainer.classList.remove('hidden');
         }
     };
     
@@ -94,16 +92,29 @@ function connectWebSocket(jobId) {
         if (statusData.status === 'SUCCESS') {
             clearInterval(pollInterval);
             progressContainer.classList.add('hidden');
-            resultContainer.classList.remove('hidden');
+            
+            if (statusData.result && statusData.result.status === 'error') {
+                alert("작업 중 오류가 발생했습니다:\n" + statusData.result.error_message);
+                uploadArea.classList.remove('hidden');
+                settingsArea.classList.remove('hidden');
+            } else {
+                resultContainer.classList.remove('hidden');
+            }
         } else if (statusData.status === 'PROGRESS') {
             progressFill.style.width = `${statusData.progress}%`;
             progressText.innerText = statusData.message;
+        } else if (statusData.status === 'FAILURE') {
+            clearInterval(pollInterval);
+            alert("서버 작업 실패: " + statusData.error);
+            progressContainer.classList.add('hidden');
+            uploadArea.classList.remove('hidden');
+            settingsArea.classList.remove('hidden');
         }
     }, 2000);
 }
 
 downloadBtn.addEventListener('click', () => {
     if (currentJobId) {
-        alert("영상 다운로드가 시작됩니다. (API 연동 예정)");
+        window.location.href = `/api/download/${currentJobId}`;
     }
 });

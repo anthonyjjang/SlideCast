@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from src.api.routes import upload, jobs
+from src.api.routes import upload, jobs, download
 from src.api import websocket
 
 app = FastAPI(
@@ -21,6 +21,7 @@ app.add_middleware(
 
 app.include_router(upload.router, prefix="/api")
 app.include_router(jobs.router, prefix="/api/jobs")
+app.include_router(download.router, prefix="/api/download")
 app.include_router(websocket.router, prefix="/ws")
 
 app.mount("/static", StaticFiles(directory="src/static"), name="static")
