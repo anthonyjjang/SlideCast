@@ -60,7 +60,12 @@ PPTX 파일을 분석하고 이미지/음성으로 변환한 뒤 MP4 영상으�
 * **자막 자동 생성 (`subtitle_maker.py`)**: 추출된 슬라이드 대본과 TTS 오디오 길이를 계산하여, YouTube 업로드 시 바로 사용할 수 있는 `.srt` 포맷의 자막 파일을 자동 생성하는 파이프라인 추가 (`tasks.py`에 연동 완료)
 * **API 옵션 확장 (`upload.py`, `tasks.py`)**: PPTX 업로드 시 목소리 종류(`voice_key`)와 화면 전환 여백 시간(`delay_sec`)을 매개변수로 받아 동적으로 생성하도록 업그레이드
 * **UI/UX 설정 기능 추가 (`index.html`, `style.css`, `app.js`)**: 사용자가 업로드 전 한국어/영어 등 다양한 목소리와 딜레이 타임을 폼 형태로 직접 선택할 수 있는 환경 설정 UI 컨트롤 추가
-* **PDF 파싱 안정화 (`image_converter.py`)**: PyMuPDF로 변환 시 발생하는 `MuPDF error: format error: No common ancestor in structure tree` 오류 방지를 위해, 손상된 구조 트리(`StructTreeRoot`)를 무시하는 예외 처리 로직 적용
+* **다운로드 API 및 에러 핸들링 연동 (`download.py`, `app.js`)**: 생성된 영상을 다운로드할 수 있는 전용 API를 추가하고, 백그라운드 작업 에러 발생 시 프론트엔드에서 즉시 알림창을 띄워주도록 로직 개선
+* **오디오 씽크 드리프트(Drift) 버그 수정 (`video_composer.py`)**: `ffmpeg` 병합 과정에서 슬라이드별 비디오와 오디오의 미세한 프레임 길이 차이로 인해 씽크가 점진적으로 밀리는 현상을 해결하기 위해, 오디오 끝부분에 무음 패딩(`apad`) 필터를 적용하여 길이를 정확하게 일치시킴
+* **고품질 PDF 파싱 및 폰트 깨짐 완벽 해결 (`image_converter.py`)**:
+  * **Mac 환경 최적화**: 기존 LibreOffice 변환 시 한글 폰트(맑은 고딕 등)가 누락/깨지는 현상을 해결하기 위해, Mac에 내장된 **Apple Keynote**를 백그라운드(AppleScript)에서 원격 조작하여 원본과 100% 동일한 고품질 PDF를 추출하도록 엔진 교체
+  * **Linux/Windows 배포 대응 (Fallback)**: 나중에 Linux(Ubuntu, AWS EC2)나 Docker 환경에 배포할 경우 Keynote 사용이 불가능하므로, 이를 감지하면 자동으로 다시 범용 오픈소스 엔진(`LibreOffice`)으로 우회하여 동작하도록 이중 안전장치(`try-except`) 마련
+  * **🚨 Linux 서버 배포 시 유의사항**: Linux 서버 배포 후 LibreOffice 엔진이 동작할 때 한글 폰트 깨짐을 방지하려면, 인프라 셋팅 과정에서 서버 운영체제 경로(`/usr/share/fonts/` 등)에 필수 폰트(맑은 고딕, 나눔고딕 등)를 반드시 사전 설치해야 함
 
 ---
 
