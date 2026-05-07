@@ -9,15 +9,32 @@ def convert_pptx_to_images(pptx_path: str, output_dir: str) -> list[str]:
     """
     os.makedirs(output_dir, exist_ok=True)
     
-    # 1. PPTX -> PDF (LibreOffice headless)
-    temp_dir = tempfile.gettempdir()
-    pdf_path = os.path.join(temp_dir, os.path.basename(pptx_path).replace('.pptx', '.pdf'))
+    temp_dir = output_dir
+    base_name = os.path.splitext(os.path.basename(pptx_path))[0]
+    pdf_path = os.path.join(temp_dir, f"{base_name}.pdf")
     
-    # MacOS/Linux 환경의 soffice 경로 (또는 환경변수에 의존)
-    subprocess.run([
-        "soffice", "--headless", "--convert-to", "pdf", 
-        "--outdir", temp_dir, pptx_path
-    ], check=True, capture_output=True)
+    abs_pptx = os.path.abspath(pptx_path)
+    abs_pdf = os.path.abspath(pdf_path)
+
+    # 1. PPTX -> PDF (Microsoft PowerPoint AppleScript 적용 - 한글 폰트 완벽 보존)
+    applescript = f'''
+    tell application "Microsoft PowerPoint"
+        open POSIX file "{abs_pptx}"
+        save active presentation in POSIX file "{abs_pdf}" as save as PDF
+        close active presentation saving no
+    end tell
+    '''
+    
+    try:
+        # Mac 환경에서 PowerPoint 앱을 원격 제어하여 PDF 추출
+        subprocess.run(["osascript", "-e", applescript], check=True, capture_output=True)
+    except Exception as e:
+        # PowerPoint 제어 실패 시 기존 LibreOffice로 폴백
+        print(f"PowerPoint AppleScript failed, fallback to LibreOffice: {e}")
+        subprocess.run([
+            "soffice", "--headless", "--convert-to", "pdf", 
+            "--outdir", temp_dir, pptx_path
+        ], check=True, capture_output=True)
     
     # 2. PDF -> PNG (PyMuPDF)
     doc = fitz.open(pdf_path)

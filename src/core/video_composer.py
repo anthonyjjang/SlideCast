@@ -38,7 +38,7 @@ def create_slide_video(img_path: str, audio_path: str, out_path: str, delay_sec:
         "ffmpeg", "-y",
         "-loop", "1", "-i", img_path,
         "-i", audio_path,
-        "-filter_complex", f"[1:a]adelay={delay_ms}|{delay_ms}[a]",
+        "-filter_complex", f"[1:a]adelay={delay_ms}|{delay_ms},apad[a]",
         "-map", "0:v",
         "-map", "[a]",
         "-vf", f"scale={VIDEO_WIDTH}:{VIDEO_HEIGHT}:force_original_aspect_ratio=decrease,"
