@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 import shutil
 import os
 import uuid
@@ -10,7 +10,11 @@ UPLOAD_DIR = "/tmp/slidenarrator_uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(
+    file: UploadFile = File(...),
+    voice_key: str = Form("ko_female"),
+    delay_sec: float = Form(1.5)
+):
     if not file.filename.endswith(".pptx"):
         raise HTTPException(status_code=400, detail="PPTX 파일만 업로드 가능합니다.")
 
@@ -23,9 +27,9 @@ async def upload_file(file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # 비동기 작업 큐에 전송 (Celery)
+    # 비동기 작업 큐에 전송 (설정값 포함)
     process_presentation.apply_async(
-        args=[job_id, file_path, job_dir],
+        args=[job_id, file_path, job_dir, voice_key, delay_sec],
         task_id=job_id
     )
 

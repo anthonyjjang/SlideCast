@@ -24,6 +24,22 @@
                 </div>
             </div>
 
+            <div class="settings-area" id="settings-area">
+                <div class="setting-group">
+                    <label for="voice-select">목소리 선택</label>
+                    <select id="voice-select">
+                        <option value="ko_female">한국어 - 여성 (SunHi)</option>
+                        <option value="ko_male">한국어 - 남성 (Hyunsu)</option>
+                        <option value="en_female">영어 - 여성 (Jenny)</option>
+                        <option value="en_male">영어 - 남성 (Guy)</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label for="delay-input">화면 전환 여백 (초)</label>
+                    <input type="number" id="delay-input" value="1.5" step="0.5" min="0">
+                </div>
+            </div>
+
             <div id="progress-container" class="hidden">
                 <h3 id="progress-text">작업을 준비 중입니다...</h3>
                 <div class="progress-bar-bg">

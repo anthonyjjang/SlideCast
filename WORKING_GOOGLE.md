@@ -51,3 +51,14 @@ PPTX 파일을 분석하고 이미지/음성으로 변환한 뒤 MP4 영상으�
 * **`src/main.py` 업데이트**: 위에서 작성한 모든 라우터(Upload, Jobs, WebSocket) 및 정적 파일(`StaticFiles`) 마운트 연동 완료
 
 ---
+
+## 🚀 [Phase 5] 품질 개선 및 Legacy 코드 통합 (UI 설정, SRT 추가, 안정화)
+> **완료 상태**: 완료
+
+기존 사용자 로컬에서 사용하던 `ref/` 폴더 내의 스크립트 로직(subprocess 기반 ffmpeg 통제)을 통합하고, UI에서 설정값을 직접 선택할 수 있도록 개선했습니다.
+* **Legacy FFMPEG 로직 통합 (`video_composer.py`)**: `ffmpeg-python` 라이브러리의 복잡한 필터 체인 대신, 기존 `ref/generate_video.py`에서 검증된 `subprocess` 기반의 Raw CLI 명령어로 원복하여 렌더링 안정성 확보
+* **자막 자동 생성 (`subtitle_maker.py`)**: 추출된 슬라이드 대본과 TTS 오디오 길이를 계산하여, YouTube 업로드 시 바로 사용할 수 있는 `.srt` 포맷의 자막 파일을 자동 생성하는 파이프라인 추가 (`tasks.py`에 연동 완료)
+* **API 옵션 확장 (`upload.py`, `tasks.py`)**: PPTX 업로드 시 목소리 종류(`voice_key`)와 화면 전환 여백 시간(`delay_sec`)을 매개변수로 받아 동적으로 생성하도록 업그레이드
+* **UI/UX 설정 기능 추가 (`index.html`, `style.css`, `app.js`)**: 사용자가 업로드 전 한국어/영어 등 다양한 목소리와 딜레이 타임을 폼 형태로 직접 선택할 수 있는 환경 설정 UI 컨트롤 추가
+
+---

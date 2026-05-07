@@ -5,6 +5,9 @@ const progressFill = document.getElementById('progress-fill');
 const progressText = document.getElementById('progress-text');
 const resultContainer = document.getElementById('result-container');
 const downloadBtn = document.getElementById('download-btn');
+const settingsArea = document.getElementById('settings-area');
+const voiceSelect = document.getElementById('voice-select');
+const delayInput = document.getElementById('delay-input');
 
 let currentJobId = null;
 
@@ -41,8 +44,11 @@ async function handleUpload(file) {
 
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('voice_key', voiceSelect.value);
+    formData.append('delay_sec', delayInput.value);
 
     uploadArea.classList.add('hidden');
+    settingsArea.classList.add('hidden');
     progressContainer.classList.remove('hidden');
 
     try {
@@ -59,6 +65,7 @@ async function handleUpload(file) {
     } catch (err) {
         alert('업로드 중 오류가 발생했습니다.');
         uploadArea.classList.remove('hidden');
+        settingsArea.classList.remove('hidden');
         progressContainer.classList.add('hidden');
     }
 }
