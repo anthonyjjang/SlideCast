@@ -62,3 +62,39 @@ PPTX 파일을 분석하고 이미지/음성으로 변환한 뒤 MP4 영상으�
 * **UI/UX 설정 기능 추가 (`index.html`, `style.css`, `app.js`)**: 사용자가 업로드 전 한국어/영어 등 다양한 목소리와 딜레이 타임을 폼 형태로 직접 선택할 수 있는 환경 설정 UI 컨트롤 추가
 
 ---
+
+## 💻 로컬 실행 가이드 (How to run)
+
+현재 로컬 환경에서 MVP 버전을 완벽하게 구동하기 위한 순서입니다.
+
+**1. 파이썬 가상환경 및 패키지 설치**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+**2. Docker 인프라 실행 (Redis & PostgreSQL)**
+*주의: `Docker Desktop` 앱이 먼저 실행되어 있어야 합니다.*
+```bash
+docker compose up -d
+```
+
+**3. Celery 비동기 워커 실행**
+새로운 터미널 창을 열고 워커를 구동합니다. (영상 변환 작업을 담당)
+```bash
+source .venv/bin/activate
+celery -A src.worker.celery_app worker --loglevel=info
+```
+
+**4. FastAPI 애플리케이션 서버 실행**
+또 다른 터미널 창을 열고 웹 서버를 구동합니다.
+```bash
+source .venv/bin/activate
+uvicorn src.main:app --reload
+```
+
+**5. 웹 브라우저 접속**
+브라우저를 열고 `http://localhost:8000` 에 접속하면 SlideNarrator 화면이 나타납니다.
+
+---
