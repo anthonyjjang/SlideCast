@@ -60,6 +60,7 @@ PPTX 파일을 분석하고 이미지/음성으로 변환한 뒤 MP4 영상으�
 * **자막 자동 생성 (`subtitle_maker.py`)**: 추출된 슬라이드 대본과 TTS 오디오 길이를 계산하여, YouTube 업로드 시 바로 사용할 수 있는 `.srt` 포맷의 자막 파일을 자동 생성하는 파이프라인 추가 (`tasks.py`에 연동 완료)
 * **API 옵션 확장 (`upload.py`, `tasks.py`)**: PPTX 업로드 시 목소리 종류(`voice_key`)와 화면 전환 여백 시간(`delay_sec`)을 매개변수로 받아 동적으로 생성하도록 업그레이드
 * **UI/UX 설정 기능 추가 (`index.html`, `style.css`, `app.js`)**: 사용자가 업로드 전 한국어/영어 등 다양한 목소리와 딜레이 타임을 폼 형태로 직접 선택할 수 있는 환경 설정 UI 컨트롤 추가
+* **PDF 파싱 안정화 (`image_converter.py`)**: PyMuPDF로 변환 시 발생하는 `MuPDF error: format error: No common ancestor in structure tree` 오류 방지를 위해, 손상된 구조 트리(`StructTreeRoot`)를 무시하는 예외 처리 로직 적용
 
 ---
 

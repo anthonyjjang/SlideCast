@@ -21,6 +21,14 @@ def convert_pptx_to_images(pptx_path: str, output_dir: str) -> list[str]:
     
     # 2. PDF -> PNG (PyMuPDF)
     doc = fitz.open(pdf_path)
+    
+    # MuPDF 에러 방지 (No common ancestor in structure tree)
+    try:
+        cat = doc.pdf_catalog()
+        doc.xref_set_key(cat, "StructTreeRoot", "null")
+    except Exception:
+        pass
+
     image_paths = []
     
     for i in range(len(doc)):
