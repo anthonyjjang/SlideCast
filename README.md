@@ -1,36 +1,89 @@
-# SlideNarrator — 발표자료 자동 영상 변환 서비스
+# SlideNarrator — PPTX AI 자동 나레이션 영상 변환 SaaS
 
-> PPTX 파일 하나로 AI 음성 나레이션 영상을 자동 생성하는 서비스
+> **PPTX 파일(발표 자료) 하나로 AI 음성 나레이션이 포함된 고화질 발표 영상을 자동 생성하는 서비스입니다.**
 
 ---
 
-## 핵심 가치
+## 🤖 The AI Collaboration Project
 
+이 프로젝트는 최신 AI 에이전트들의 완벽한 협업으로 탄생했습니다.
+
+* **기획 & 아키텍처 설계**: `Anthropic Claude` (요구사항 정의, 비즈니스 모델 기획, GSD 로드맵 작성)
+* **실제 개발 & 트러블슈팅**: `Google DeepMind Gemini (Antigravity)` (FastAPI 백엔드, 비동기 파이프라인, 프론트엔드 UI, 멀티미디어 렌더링 전 과정 구현)
+
+---
+
+## ✨ 주요 기능 (현재 구현 완료된 MVP 기능)
+
+현재 아래의 기능들이 모두 로컬 환경에서 완벽하게 동작합니다.
+
+* **발표 스크립트 자동 추출**: PPTX의 "슬라이드 노트"를 읽어 대본으로 자동 인식
+* **다국어 AI 음성 생성 (TTS)**: Microsoft Edge-TTS 엔진을 활용한 고품질 음성 생성
+* **커스텀 설정 UI**: 
+  * 한국어, 영어 등 다양한 목소리 톤 및 성별 선택 기능
+  * 화면 전환 시 자연스러운 여백을 위한 "딜레이 타임(초)" 설정 기능
+* **오디오/비디오 자동 씽크 및 병합 (FFMPEG)**: 각 슬라이드 오디오 길이에 맞춰 무음 패딩(`apad`)을 적용하여 씽크 어긋남 없이 완벽하게 병합된 MP4 영상 제공
+* **YouTube용 자막(.srt) 자동 생성**: 생성된 각 슬라이드별 오디오 타임스탬프를 계산하여 유튜브 업로드 시 바로 쓸 수 있는 SRT 자막 파일 생성
+* **고품질 폰트 렌더링**: Mac 환경의 `Apple Keynote` 애플스크립트를 원격 제어하여 한글 폰트(맑은 고딕 등) 깨짐 없이 원본 그대로 PDF/PNG 변환 (Linux 서버 배포 시 LibreOffice 자동 Fallback 지원)
+* **실시간 진행률 표시**: Celery & Redis & WebSocket을 활용해 브라우저에서 작업 진행 상황 실시간 확인 및 최종 영상 다운로드
+
+---
+
+## 🚀 로컬 실행 가이드 (How to run)
+
+현재 로컬(Mac 환경 기준)에서 MVP 버전을 완벽하게 구동하기 위한 순서입니다.
+
+### 1. 사전 요구사항 (Prerequisites)
+시스템에 아래 패키지가 설치되어 있어야 합니다. (Mac Homebrew 기준)
+```bash
+brew install ffmpeg redis libreoffice
 ```
-PPTX 업로드 (슬라이드 노트 = 발표 스크립트)
-        ↓
-슬라이드 이미지 + AI 음성 자동 생성
-        ↓
-MP4 영상 다운로드
+*(Mac 환경에서는 LibreOffice 대신 기본 설치된 Keynote를 우선적으로 사용하여 고품질로 렌더링합니다.)*
+
+### 2. 파이썬 가상환경 및 패키지 설치
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-**별도 스크립트 작업 불필요 — 슬라이드 노트가 곧 대본**
+### 3. 백그라운드 서비스(Redis) 실행
+Celery 메시지 브로커를 위해 Redis 서버가 켜져 있어야 합니다. (새 터미널 창)
+```bash
+redis-server
+```
+*(Docker가 있다면 `docker-compose up -d redis` 로도 실행 가능합니다.)*
+
+### 4. Celery 워커(Worker) 실행
+영상 합성 및 TTS 생성을 백그라운드에서 전담할 워커를 실행합니다. (새 터미널 창, 가상환경 활성화 필수)
+```bash
+celery -A src.worker.celery_app worker --loglevel=info
+```
+
+### 5. FastAPI 웹 서버 실행
+사용자가 접속할 웹 서버를 실행합니다. (새 터미널 창, 가상환경 활성화 필수)
+```bash
+uvicorn src.main:app --reload
+```
+
+### 6. 접속 및 테스트
+브라우저를 열고 `http://localhost:8000` 에 접속하여 PPTX 파일을 업로드해 보세요!
 
 ---
 
-## 주요 기능
+## 🛠 기술 스택 (Tech Stack)
 
-- PPTX 슬라이드 노트 자동 추출
-- 슬라이드별 AI 음성 생성 (한국어/영어/일본어/중국어 등)
-- 슬라이드 전환 씽크 자동 맞춤
-- 다양한 목소리 선택 (성별, 톤)
-- MP4 다운로드 (Full HD 1920×1080)
-- **YouTube 패키지 자동 생성** (자막 SRT + 챕터 + 썸네일 + 메타데이터)
-- **다국어 자막 SRT** → YouTube 자동 번역 활성화
+* **Backend**: Python 3.11+, FastAPI
+* **Async Task**: Celery, Redis
+* **Frontend**: HTML5, Vanilla JS, Tailwind CSS (예정)
+* **Media Processing**: FFmpeg (영상 합성), Edge-TTS (음성 생성)
+* **Document Parsing**: python-pptx (대본 추출), AppleScript/PyMuPDF (슬라이드 렌더링)
 
 ---
 
-## 문서 목록
+## 📚 문서 목록 (Docs)
+
+기획 단계에서 Claude가 작성한 상세 문서들입니다.
 
 | 문서 | 설명 |
 |------|------|
@@ -42,53 +95,3 @@ MP4 영상 다운로드
 | [배포 가이드](docs/06_DEPLOYMENT.md) | Docker, 클라우드, 도메인 |
 | [사업계획서](docs/07_BUSINESS_PLAN.md) | 시장 분석, 원가, 수익 모델, 다국어 전략 |
 | [YouTube 연동](docs/08_YOUTUBE_INTEGRATION.md) | SRT 자막, 챕터, API 업로드 |
-
----
-
-## 빠른 시작 (로컬)
-
-```bash
-# 의존성 설치
-pip install -r requirements.txt
-brew install ffmpeg libreoffice
-
-# 서버 실행
-uvicorn src.main:app --reload
-
-# 접속
-open http://localhost:8000
-```
-
----
-
-## 프로젝트 관리 (GSD 로드맵)
-
-본 프로젝트는 Claude Code의 `GSD(Get Shit Done)` 워크플로우를 활용하여 개발 마일스톤을 체계적으로 관리합니다. 프로젝트의 목표 및 진행 상태는 `.planning/` 디렉터리에 문서화되어 있습니다.
-
-- **`PROJECT.md`**: 프로젝트 핵심 가치 및 목표 정의
-- **`ROADMAP.md`**: 전체 개발 로드맵 (Phase 1 ~ Phase 8)
-- **`STATE.md`**: 현재 진행 중인 Phase 및 작업 상태 기록
-
-### 현재 작업 진행 현황 (Current Status)
-
-> **현재 단계: Phase 1 — 프로젝트 기반 구축 (MVP 시작)**
-
-현재 코어 로직 개발을 위한 애플리케이션 초기 뼈대 작업을 진행 중입니다.
-- **진행 중인 작업**:
-  - FastAPI 진입점(`main.py`) 및 `src/` 디렉터리 구조 초기화
-  - `requirements.txt` 패키지 의존성 설정
-  - `docker-compose.yml` 및 `.env.example` 등 환경/배포 설정
-  - 데이터베이스 마이그레이션 세팅
-
----
-
-## 기술 스택 요약
-
-```
-Frontend  : HTML/CSS/JS (Vanilla → React 전환 예정)
-Backend   : FastAPI (Python 3.11+)
-TTS       : Microsoft Edge TTS / OpenAI TTS
-영상 합성  : ffmpeg
-PPTX 파싱 : python-pptx
-배포      : Docker + AWS EC2 / Railway
-```
