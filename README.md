@@ -61,6 +61,27 @@ open http://localhost:8000
 
 ---
 
+## 프로젝트 관리 (GSD 로드맵)
+
+본 프로젝트는 Claude Code의 `GSD(Get Shit Done)` 워크플로우를 활용하여 개발 마일스톤을 체계적으로 관리합니다. 프로젝트의 목표 및 진행 상태는 `.planning/` 디렉터리에 문서화되어 있습니다.
+
+- **`PROJECT.md`**: 프로젝트 핵심 가치 및 목표 정의
+- **`ROADMAP.md`**: 전체 개발 로드맵 (Phase 1 ~ Phase 8)
+- **`STATE.md`**: 현재 진행 중인 Phase 및 작업 상태 기록
+
+### 현재 작업 진행 현황 (Current Status)
+
+> **현재 단계: Phase 1 — 프로젝트 기반 구축 (MVP 시작)**
+
+현재 코어 로직 개발을 위한 애플리케이션 초기 뼈대 작업을 진행 중입니다.
+- **진행 중인 작업**:
+  - FastAPI 진입점(`main.py`) 및 `src/` 디렉터리 구조 초기화
+  - `requirements.txt` 패키지 의존성 설정
+  - `docker-compose.yml` 및 `.env.example` 등 환경/배포 설정
+  - 데이터베이스 마이그레이션 세팅
+
+---
+
 ## 기술 스택 요약
 
 ```
