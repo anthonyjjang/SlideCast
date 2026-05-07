@@ -16,21 +16,23 @@ def convert_pptx_to_images(pptx_path: str, output_dir: str) -> list[str]:
     abs_pptx = os.path.abspath(pptx_path)
     abs_pdf = os.path.abspath(pdf_path)
 
-    # 1. PPTX -> PDF (Microsoft PowerPoint AppleScript 적용 - 한글 폰트 완벽 보존)
+    # 1. PPTX -> PDF (Apple Keynote AppleScript 적용 - 한글 폰트 완벽 보존)
     applescript = f'''
-    tell application "Microsoft PowerPoint"
-        open POSIX file "{abs_pptx}"
-        save active presentation in POSIX file "{abs_pdf}" as save as PDF
-        close active presentation saving no
+    tell application "Keynote"
+        activate
+        set theFile to POSIX file "{abs_pptx}"
+        set theDoc to open theFile
+        export theDoc to POSIX file "{abs_pdf}" as PDF
+        close theDoc saving no
     end tell
     '''
     
     try:
-        # Mac 환경에서 PowerPoint 앱을 원격 제어하여 PDF 추출
+        # Mac 환경에서 Keynote 앱을 원격 제어하여 PDF 추출 (PowerPoint보다 훨씬 빠르고 안정적)
         subprocess.run(["osascript", "-e", applescript], check=True, capture_output=True)
     except Exception as e:
-        # PowerPoint 제어 실패 시 기존 LibreOffice로 폴백
-        print(f"PowerPoint AppleScript failed, fallback to LibreOffice: {e}")
+        # Keynote 제어 실패 시 기존 LibreOffice로 폴백
+        print(f"Keynote AppleScript failed, fallback to LibreOffice: {e}")
         subprocess.run([
             "soffice", "--headless", "--convert-to", "pdf", 
             "--outdir", temp_dir, pptx_path
