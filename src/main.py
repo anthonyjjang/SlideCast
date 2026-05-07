@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from src.api.routes import upload, jobs
+from src.api import websocket
 
 app = FastAPI(
     title="SlideNarrator API",
@@ -16,9 +19,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(upload.router, prefix="/api")
+app.include_router(jobs.router, prefix="/api/jobs")
+app.include_router(websocket.router, prefix="/ws")
+
+app.mount("/static", StaticFiles(directory="src/static"), name="static")
+
 @app.get("/")
 async def root():
-    return {"message": "Welcome to SlideNarrator API"}
+    from fastapi.responses import FileResponse
+    return FileResponse("src/static/index.html")
 
 @app.get("/health")
 async def health_check():
