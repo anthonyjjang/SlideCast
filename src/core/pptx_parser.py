@@ -14,7 +14,11 @@ def extract_notes(pptx_path: str) -> List[Dict[str, Any]]:
         if slide.has_notes_slide:
             text_frame = slide.notes_slide.notes_text_frame
             if text_frame:
-                notes = text_frame.text.strip()
+                raw_notes = text_frame.text.strip()
+                if raw_notes:
+                    # 첫 줄(제목/키메시지) 제외하고 나머지 전체를 스크립트로 사용
+                    lines = raw_notes.split('\n', 1)
+                    notes = lines[1].strip() if len(lines) > 1 else ""
         
         slides.append({
             "slide_no": i + 1,
