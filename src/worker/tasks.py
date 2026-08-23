@@ -1,11 +1,16 @@
 import os
 import asyncio
+import logging
+
+from src.config import settings
 from src.worker.celery_app import celery_app
 from src.core.pptx_parser import extract_notes
 from src.core.image_converter import convert_pptx_to_images
 from src.core.tts_engine import generate_tts
 from src.core.video_composer import create_slide_video, concat_videos, get_audio_duration
 from src.core.subtitle_maker import create_srt
+
+logger = logging.getLogger(__name__)
 
 @celery_app.task(bind=True)
 def process_presentation(self, job_id: str, pptx_path: str, output_dir: str, voice_key: str = "ko_female", delay_sec: float = 1.5):
@@ -17,9 +22,26 @@ def process_presentation(self, job_id: str, pptx_path: str, output_dir: str, voi
         self.update_state(state='PROGRESS', meta={'progress': 10, 'message': '노트 추출 중...'})
         slides_info = extract_notes(pptx_path)
         
+        if not slides_info:
+            raise ValueError("변환할 슬라이드가 없습니다. (숨김 슬라이드만 존재하거나 빈 파일)")
+
+        if len(slides_info) > settings.MAX_SLIDES:
+            raise ValueError(
+                f"슬라이드가 너무 많습니다. ({len(slides_info)}장 / 최대 {settings.MAX_SLIDES}장)"
+            )
+
         # 2. 이미지 변환
         self.update_state(state='PROGRESS', meta={'progress': 30, 'message': '슬라이드 이미지 변환 중...'})
         image_paths = convert_pptx_to_images(pptx_path, output_dir)
+
+        # 대본 개수와 렌더링된 슬라이드 이미지 개수는 반드시 일치해야 한다.
+        # 어긋난 채로 진행하면 IndexError가 나거나, 더 나쁘게는 모든 슬라이드에
+        # 다른 슬라이드의 나레이션이 붙은 영상이 조용히 만들어진다.
+        if len(image_paths) != len(slides_info):
+            raise ValueError(
+                f"슬라이드 대본({len(slides_info)}개)과 렌더링된 이미지({len(image_paths)}개)의 "
+                f"개수가 일치하지 않습니다. 숨김 슬라이드 처리나 PDF 변환 결과를 확인하세요."
+            )
         
         # 3. TTS 변환 및 클립 영상 합성
         video_paths = []
@@ -31,11 +53,13 @@ def process_presentation(self, job_id: str, pptx_path: str, output_dir: str, voi
             notes = slide.get("notes", "")
             
             # 오디오 생성 및 길이 파악
-            audio_path = os.path.join(output_dir, f"audio_{i+1:03d}.mp3")
+            # 대본이 없으면 audio_path를 None으로 넘겨 무음 클립으로 만든다.
+            # (이전 실행의 잔여 파일을 잘못 집어가는 것도 함께 방지)
+            audio_path = None
             if notes:
+                audio_path = os.path.join(output_dir, f"audio_{i+1:03d}.mp3")
                 asyncio.run(generate_tts(notes, voice_key, audio_path))
-                dur = get_audio_duration(audio_path)
-                slide["audio_duration"] = dur
+                slide["audio_duration"] = get_audio_duration(audio_path)
             else:
                 slide["audio_duration"] = 0.0
             
@@ -60,5 +84,8 @@ def process_presentation(self, job_id: str, pptx_path: str, output_dir: str, voi
             "output_srt": srt_path
         }
 
-    except Exception as e:
-        return {"status": "error", "error_message": str(e)}
+    except Exception:
+        # 예외를 dict로 삼키면 Celery 상태가 항상 SUCCESS가 되어
+        # 재시도·모니터링(Sentry 등)이 전부 무력화된다. 기록만 남기고 그대로 올린다.
+        logger.exception("작업 실패 (job_id=%s)", job_id)
+        raise
