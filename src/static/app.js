@@ -57,17 +57,29 @@ async function handleUpload(file) {
             body: formData
         });
         const data = await res.json();
-        
+
+        if (!res.ok) {
+            resetToUpload(data.detail || '업로드가 거부되었습니다.');
+            return;
+        }
+
         if (data.job_id) {
             currentJobId = data.job_id;
             connectWebSocket(data.job_id);
         }
     } catch (err) {
-        alert('업로드 중 오류가 발생했습니다.');
-        uploadArea.classList.remove('hidden');
-        settingsArea.classList.remove('hidden');
-        progressContainer.classList.add('hidden');
+        resetToUpload('업로드 중 오류가 발생했습니다.');
     }
+}
+
+// 오류 발생 시 업로드 화면으로 되돌린다
+function resetToUpload(message) {
+    progressContainer.classList.add('hidden');
+    resultContainer.classList.add('hidden');
+    uploadArea.classList.remove('hidden');
+    settingsArea.classList.remove('hidden');
+    fileInput.value = '';
+    if (message) alert(message);
 }
 
 function connectWebSocket(jobId) {
@@ -92,23 +104,13 @@ function connectWebSocket(jobId) {
         if (statusData.status === 'SUCCESS') {
             clearInterval(pollInterval);
             progressContainer.classList.add('hidden');
-            
-            if (statusData.result && statusData.result.status === 'error') {
-                alert("작업 중 오류가 발생했습니다:\n" + statusData.result.error_message);
-                uploadArea.classList.remove('hidden');
-                settingsArea.classList.remove('hidden');
-            } else {
-                resultContainer.classList.remove('hidden');
-            }
+            resultContainer.classList.remove('hidden');
         } else if (statusData.status === 'PROGRESS') {
             progressFill.style.width = `${statusData.progress}%`;
             progressText.innerText = statusData.message;
         } else if (statusData.status === 'FAILURE') {
             clearInterval(pollInterval);
-            alert("서버 작업 실패: " + statusData.error);
-            progressContainer.classList.add('hidden');
-            uploadArea.classList.remove('hidden');
-            settingsArea.classList.remove('hidden');
+            resetToUpload("영상 생성에 실패했습니다:\n" + (statusData.error || "알 수 없는 오류"));
         }
     }, 2000);
 }
