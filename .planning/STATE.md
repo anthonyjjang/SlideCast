@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 Phase: 5.1 of 8 (치명 버그 수정 및 안정화 · 긴급)
 Plan: 05.1-05 (WebSocket 실연결 또는 제거) — 다음 착수 대상
 Status: In progress
-Last activity: 2026-08-24 — Phase 5.1 버그 4건 수정 + 퀵 가이드 덱 작성, main 머지 및 origin 푸시 완료
+Last activity: 2026-09-07 — 사용자 매뉴얼 덱(18장) 작성 및 README 갱신
 
 Progress: ███████░░░ 약 65% (Phase 1~4 완료, 5는 2/5, 5.1은 4/6)
 
@@ -77,6 +77,8 @@ Resume file: None
 
 ### 검증 자산
 
+- `docs/guide/SlideCast_사용자매뉴얼.pptx` — 18장 사용자 매뉴얼(2026-09-07). 노트 포함. 12쪽의 'SRT는 작업 폴더에서 복사'는
+  자막 다운로드 버튼이 생기면 갱신할 것. 재생성: `scripts/make_user_manual.js` (pptxgenjs 필요).
 - `docs/guide/SlideCast_퀵가이드.pptx` — 14장 가이드 덱. 노트 포함이라 그대로 파이프라인 입력으로 쓸 수 있다.
 - `scripts/make_guide_deck.py` — 위 덱 재생성기.
 - `output/guide/` (gitignore) — 위 덱으로 생성한 6분 36초 영상 + SRT.

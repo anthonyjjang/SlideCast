@@ -29,12 +29,14 @@
 
 ---
 
-## 📖 퀵 가이드 (작업자용)
+## 📖 사용자 매뉴얼 · 퀵 가이드
 
-발표자료 작성법부터 실행 방법까지 한 번에 정리한 가이드 덱입니다.
+처음 쓰는 사용자는 **사용자 매뉴얼**부터, 요약만 필요하면 **퀵 가이드**를 보세요. 두 덱 모두 나레이션 노트가 들어 있어 SlideCast에 그대로 올리면 설명 영상이 나옵니다.
 
 | 항목 | 위치 |
 |------|------|
+| 사용자 매뉴얼 (18장) | [`docs/guide/SlideCast_사용자매뉴얼.pptx`](docs/guide/SlideCast_사용자매뉴얼.pptx) — 설치·작성·업로드·결과·문제 해결·API |
+| 매뉴얼 생성 스크립트 | [`scripts/make_user_manual.js`](scripts/make_user_manual.js) — `npm install pptxgenjs` 후 실행 |
 | 가이드 발표자료 (14장) | [`docs/guide/SlideCast_퀵가이드.pptx`](docs/guide/SlideCast_퀵가이드.pptx) |
 | 가이드 생성 스크립트 | [`scripts/make_guide_deck.py`](scripts/make_guide_deck.py) |
 | 나레이션 영상 (6분 36초) | `output/guide/final_guide.mp4` — 아래 명령으로 생성 |
